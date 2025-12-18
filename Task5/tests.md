@@ -1,0 +1,22 @@
+| Название теста                                   | Тип               | Компоненты                                              | Предусловия                                                                 |
+|------------------------------------------------|-------------------|---------------------------------------------------------|------------------------------------------------------------------------------|
+| Успешный платёж (happy path)                   | End-to-End        | Orchestrator, Payment, FraudCheck, Notification         | FraudCheck возвращает ALLOW                                                 |
+| Антифрод отказ до перевода средств             | End-to-End        | Orchestrator, Payment, FraudCheck, Notification         | FraudCheck возвращает DENY                                                  |
+| Антифрод отказ после списания                  | End-to-End        | Orchestrator, Payment, FraudCheck, Notification         | Списание успешно, FraudCheck возвращает DENY                                |
+| Ручная проверка с подтверждением               | End-to-End        | Orchestrator, Payment, FraudCheck, Operator UI          | FraudCheck возвращает MANUAL_REVIEW, оператор подтверждает                  |
+| Ручная проверка с отказом                      | End-to-End        | Orchestrator, Payment, FraudCheck, Operator UI          | FraudCheck возвращает MANUAL_REVIEW, оператор отклоняет                     |
+| Cut-off по таймауту ручной проверки            | End-to-End        | Orchestrator, Payment, FraudCheck                       | MANUAL_REVIEW без ответа > 20 минут                                         |
+| Сбой FraudCheck (timeout + retry)              | Интеграционный    | Orchestrator, FraudCheck                                | FraudCheck не отвечает, настроены retry и таймауты                          |
+| Повтор события FraudCheck (идемпотентность)   | Интеграционный    | Orchestrator, FraudCheck                                | Дублирующий ответ FraudCheck                                                |
+| Сбой при переводе контрагенту                  | End-to-End        | Orchestrator, Payment                                   | CREDIT_MERCHANT возвращает ошибку                                           |
+| Компенсация при сбое перевода                  | Интеграционный    | Orchestrator, Payment                                   | Ошибка после списания, до финализации                                       |
+| Автоматический возврат средств                 | End-to-End        | Orchestrator, Payment, Notification                     | Любой отказ после DEBIT_FUNDS                                               |
+| Повторный запрос списания (idempotency key)   | Интеграционный    | Payment                                                  | Повторный DEBIT_FUNDS с тем же ключом                                       |
+| Перезапуск оркестратора                        | Интеграционный    | Orchestrator, BPM Engine                                 | Оркестратор перезапущен во время ожидания                                   |
+| Восстановление после рестарта                  | End-to-End        | Orchestrator, Payment, FraudCheck                       | Активная Saga в состоянии ожидания                                          |
+| Параллельные уведомления                       | Интеграционный    | Notification                                            | Одновременная отправка success/failure уведомлений                          |
+| Уведомление службы безопасности                | End-to-End        | Orchestrator, Notification, Security System             | FraudCheck возвращает DENY                                                  |
+| Потеря события FraudCheck                     | Интеграционный    | Orchestrator, Message Broker                            | Сообщение не доставлено, включён retry                                      |
+| Дублирование события CREDIT_MERCHANT           | Интеграционный    | Orchestrator, Payment                                   | Повторный callback от платёжного провайдера                                 |
+| Нельзя перевести деньги дважды                 | End-to-End        | Orchestrator, Payment                                   | Повторное событие после успешного CREDIT_MERCHANT                           |
+| Финальное состояние Saga                       | End-to-End        | Orchestrator                                            | Saga завершена SUCCESS или FAILED                                           |
